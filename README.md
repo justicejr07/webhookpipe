@@ -6,6 +6,7 @@
 + Instal Node Dependencies
 + Start Node App
 + Start React App
++ add jenkins
 
 
 run with npm start run command in side ui follder
