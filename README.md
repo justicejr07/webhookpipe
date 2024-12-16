@@ -8,5 +8,5 @@
 + Start React App
 
 
-## Watch it on [Youtube](https://www.youtube.com/watch?v=HgaJW2I4Mbk)
+run with npm start run command in side ui follder
 
