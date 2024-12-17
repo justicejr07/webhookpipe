@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+    
+    tools {
+        jdk 'jdk17'  // Assuming you're still using JDK17
+        npm 'nodejs'  // Make sure npm is installed as a tool in Jenkins
+    }
+
+    stages {
+        
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/justicejr07/NetflixApp.git'   
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                // Install npm dependencies
+                sh 'npm install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Run tests (adjust if you have a specific testing command)
+                sh 'npm test'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh 'docker build -t justicejr/netflixapp:latest .'
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Push the Docker image to Docker registry
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh 'docker push justicejr/netflixapp:latest'
+                    }
+                }
+            }
+        }
+    }
+}
