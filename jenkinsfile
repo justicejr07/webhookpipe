@@ -1,50 +1,52 @@
 pipeline {
     agent any
-    
+
     tools {
         jdk 'jdk17'  // Assuming you're still using JDK17
         npm 'nodejs'  // Make sure npm is installed as a tool in Jenkins
     }
 
     stages {
-        
-        stage('Git Checkout') {
+        // Git Webhook Checkout - Checkout the webhookpipe repository
+        stage('Git Webhook Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/justicejr07/NetflixApp.git'   
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'git-cred', url: 'https://github.com/justicejr07/webhookpipe']])
             }
         }
 
+        // Install Dependencies - Install npm dependencies for the webhookpipe project
         stage('Install Dependencies') {
             steps {
-                // Install npm dependencies
-                sh 'npm install'
+                sh 'npm install'  // Install dependencies from package.json
             }
         }
 
+        // Test - Run tests (adjust this based on the specific test command in your project)
         stage('Test') {
             steps {
-                // Run tests (adjust if you have a specific testing command)
-                sh 'npm test'
+                sh 'npm test'  // Run npm tests (adjust if necessary)
             }
         }
 
+        // Build Docker Image - Build the Docker image for netflixclone-webhookpipe
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh 'docker build -t justicejr/netflixapp:latest .'
+                        // Build the Docker image with the updated tag 'netflixclone-webhookpipe'
+                        sh 'docker build -t justicejr/netflixclone-webhookpipe:latest .'
                     }
                 }
             }
         }
 
+        // Push Docker Image - Push the built Docker image to Docker registry
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Push the Docker image to Docker registry
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh 'docker push justicejr/netflixapp:latest'
+                        // Push the Docker image with the updated tag 'netflixclone-webhookpipe'
+                        sh 'docker push justicejr/netflixclone-webhookpipe:latest'
                     }
                 }
             }
