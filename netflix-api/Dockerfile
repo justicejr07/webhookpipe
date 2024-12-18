@@ -1,20 +1,20 @@
-# Use Node.js 23 as the base image
+# Use the official Node.js image
 FROM node:23
 
-# Set the working directory inside the container
-WORKDIR /app
+# Set the working directory in the container
+WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json (if present) into the working directory
+# Copy package.json and package-lock.json to the container
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application code into the container
+# Copy the rest of the application files
 COPY . .
 
-# Expose the port the app runs on (3000 in your case)
+# Expose the port the app will run on
 EXPOSE 3000
 
-# Command to run the application (uses the start script defined in package.json)
+# Set the start command
 CMD ["npm", "start"]
