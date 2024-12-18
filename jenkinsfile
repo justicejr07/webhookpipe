@@ -2,54 +2,76 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk17'  // Assuming you're still using JDK17
-        npm 'nodejs'  // Make sure npm is installed as a tool in Jenkins
+        jdk 'jdk17'       // Use JDK 17
+        nodejs 'nodejs'   // Ensure Node.js is installed as a tool in Jenkins
     }
 
     stages {
-        // Git Webhook Checkout - Checkout the webhookpipe repository
+        // Checkout the repository using Git
         stage('Git Webhook Checkout') {
             steps {
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'git-cred', url: 'https://github.com/justicejr07/webhookpipe']])
+                checkout scmGit(
+                    branches: [[name: '*/main']], 
+                    extensions: [], 
+                    userRemoteConfigs: [[credentialsId: 'github-credencial', url: 'https://github.com/justicejr07/hotstar-clone-app-ci-cd-k8.git']]
+                )
             }
         }
 
-        // Install Dependencies - Install npm dependencies for the webhookpipe project
+        // Install npm dependencies
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'  // Install dependencies from package.json
+                sh 'npm install'
             }
         }
 
-        // Test - Run tests (adjust this based on the specific test command in your project)
-        stage('Test') {
-            steps {
-                sh 'npm test'  // Run npm tests (adjust if necessary)
-            }
-        }
-
-        // Build Docker Image - Build the Docker image for netflixclone-webhookpipe
+        // Build the Docker image
         stage('Build Docker Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        // Build the Docker image with the updated tag 'netflixclone-webhookpipe'
-                        sh 'docker build -t justicejr/netflixclone-webhookpipe:latest .'
+                    withDockerRegistry(credentialsId: 'docker-credencial', toolName: 'docker') {
+                        sh 'docker build -t justicejr48543/hotstarclone:latest .'
                     }
                 }
             }
         }
 
-        // Push Docker Image - Push the built Docker image to Docker registry
+        // Push the Docker image to Docker Hub
         stage('Push Docker Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        // Push the Docker image with the updated tag 'netflixclone-webhookpipe'
-                        sh 'docker push justicejr/netflixclone-webhookpipe:latest'
+                    withDockerRegistry(credentialsId: 'docker-credencial', toolName: 'docker') {
+                        sh 'docker push justicejr48543/hotstarclone:latest'
                     }
                 }
             }
+        }
+
+        // Run the Docker container
+        stage('Run Docker Image') {
+            steps {
+                script {
+                    sh '''
+                    docker stop netflixclone-webhookpipe || true
+                    docker rm netflixclone-webhookpipe || true
+
+                    # Run the container with the built image
+                    docker run -d --name netflixclone-webhookpipe -p 3000:3000 justicejr48543/hotstarclone:latest
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution completed.'
+        }
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline execution failed. Please check the logs for details.'
         }
     }
 }
